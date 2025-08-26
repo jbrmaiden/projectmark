@@ -16,6 +16,16 @@ export function createTopicRoutes(database: IDatabase): Router {
     await topicController.getTopicsByParent(req, res);
   });
 
+  // Get topic with its resources
+  router.get('/:id/with-resources', async (req, res) => {
+    await topicController.getTopicWithResources(req, res);
+  });
+
+  // Get resources for a specific topic
+  router.get('/:id/resources', async (req, res) => {
+    await topicController.getTopicResources(req, res);
+  });
+
   // Get topic by ID
   router.get('/:id', async (req, res) => {
     await topicController.getTopicById(req, res);

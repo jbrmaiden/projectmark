@@ -35,6 +35,10 @@ export interface Topic extends EntityData {
   parentTopicId?: string;
 }
 
+export interface TopicWithResources extends Topic {
+  resources: Resource[];
+}
+
 export interface Resource extends EntityData {
   id: string;
   topicId: string;

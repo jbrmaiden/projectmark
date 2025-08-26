@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IDatabase } from '../database/interfaces/IDatabase';
-import { Topic } from '../types';
+import { Topic, Resource } from '../types';
 import { TopicModel } from '../models/Topic';
 
 export class TopicController {
@@ -9,11 +9,33 @@ export class TopicController {
   async getAllTopics(req: Request, res: Response): Promise<void> {
     try {
       const topics = await this.database.find<Topic>('topics');
-      res.json({
-        success: true,
-        data: topics,
-        count: topics.length
-      });
+      
+      // Optionally include resource counts
+      const includeResourceCount = req.query.includeResourceCount === 'true';
+      
+      if (includeResourceCount) {
+        const topicsWithResourceCount = await Promise.all(
+          topics.map(async (topic) => {
+            const resources = await this.database.find<Resource>('resources', { topicId: topic.id });
+            return {
+              ...topic,
+              resourceCount: resources.length
+            };
+          })
+        );
+        
+        res.json({
+          success: true,
+          data: topicsWithResourceCount,
+          count: topics.length
+        });
+      } else {
+        res.json({
+          success: true,
+          data: topics,
+          count: topics.length
+        });
+      }
     } catch (error) {
       console.error('Error fetching topics:', error);
       res.status(500).json({
@@ -243,6 +265,89 @@ export class TopicController {
       });
     } catch (error) {
       console.error('Error fetching topics by parent:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  async getTopicWithResources(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Topic ID is required'
+        });
+        return;
+      }
+
+      // Get the topic
+      const topic = await this.database.findById<Topic>('topics', id);
+      if (!topic) {
+        res.status(404).json({
+          success: false,
+          error: 'Topic not found'
+        });
+        return;
+      }
+
+      // Get associated resources
+      const resources = await this.database.find<Resource>('resources', { topicId: id });
+
+      res.json({
+        success: true,
+        data: {
+          ...topic,
+          resources
+        },
+        resourceCount: resources.length
+      });
+    } catch (error) {
+      console.error('Error fetching topic with resources:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  async getTopicResources(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Topic ID is required'
+        });
+        return;
+      }
+
+      // Verify topic exists
+      const topic = await this.database.findById<Topic>('topics', id);
+      if (!topic) {
+        res.status(404).json({
+          success: false,
+          error: 'Topic not found'
+        });
+        return;
+      }
+
+      // Get resources for this topic
+      const resources = await this.database.find<Resource>('resources', { topicId: id });
+
+      res.json({
+        success: true,
+        data: resources,
+        count: resources.length,
+        topic: {
+          id: topic.id,
+          name: topic.name
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching topic resources:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error'
