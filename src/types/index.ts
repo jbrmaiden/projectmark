@@ -27,12 +27,16 @@ export interface User extends EntityData {
 
 export interface Topic extends EntityData {
   id: string;
+  baseTopicId: string; // Links all versions of the same topic
   name: string;
   content: string;
+  description?: string; // Optional description field
   createdAt: string;
   updatedAt: string;
   version: number;
   parentTopicId?: string;
+  isLatest: boolean; // Indicates if this is the current version
+  createdBy?: string; // User who created this version
 }
 
 export interface TopicWithResources extends Topic {
@@ -47,6 +51,18 @@ export interface Resource extends EntityData {
   type: 'video' | 'article' | 'pdf' | 'document' | 'link';
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TopicVersion {
+  baseTopicId: string;
+  version: number;
+  topic: Topic;
+}
+
+export interface TopicHistory {
+  baseTopicId: string;
+  currentVersion: number;
+  versions: TopicVersion[];
 }
 
 export type EntityType = 'users' | 'topics' | 'resources';

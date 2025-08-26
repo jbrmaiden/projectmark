@@ -16,6 +16,31 @@ export function createTopicRoutes(database: IDatabase): Router {
     await topicController.getTopicsByParent(req, res);
   });
 
+  // Get topic history (all versions)
+  router.get('/history/:baseTopicId', async (req, res) => {
+    await topicController.getTopicHistory(req, res);
+  });
+
+  // Get specific version of a topic
+  router.get('/version/:baseTopicId/:version', async (req, res) => {
+    await topicController.getTopicVersion(req, res);
+  });
+
+  // Get latest version of a topic by baseTopicId
+  router.get('/version/:baseTopicId', async (req, res) => {
+    await topicController.getTopicVersion(req, res);
+  });
+
+  // Get specific version with resources
+  router.get('/version/:baseTopicId/:version/with-resources', async (req, res) => {
+    await topicController.getTopicVersionWithResources(req, res);
+  });
+
+  // Get latest version with resources
+  router.get('/version/:baseTopicId/with-resources', async (req, res) => {
+    await topicController.getTopicVersionWithResources(req, res);
+  });
+
   // Get topic with its resources
   router.get('/:id/with-resources', async (req, res) => {
     await topicController.getTopicWithResources(req, res);
