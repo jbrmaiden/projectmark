@@ -25,6 +25,24 @@ export interface User extends EntityData {
   createdAt: string;
 }
 
+export interface Topic extends EntityData {
+  id: string;
+  name: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+  parentTopicId?: string;
+}
 
+export interface Resource extends EntityData {
+  id: string;
+  topicId: string;
+  url: string;
+  description: string;
+  type: 'video' | 'article' | 'pdf' | 'document' | 'link';
+  createdAt: string;
+  updatedAt: string;
+}
 
-export type EntityType = 'users';
+export type EntityType = 'users' | 'topics' | 'resources';

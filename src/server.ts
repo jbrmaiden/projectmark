@@ -5,6 +5,8 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { InMemoryDatabase } from './database/implementations/InMemoryDatabase';
 import { createUserRoutes } from './routes/userRoutes';
+import { createTopicRoutes } from './routes/topicRoutes';
+import { createResourceRoutes } from './routes/resourceRoutes';
 import { createCoreRoutes } from './routes/coreRoutes';
 
 dotenv.config();
@@ -28,6 +30,8 @@ async function initDatabase() {
 // Routes
 app.use('/', createCoreRoutes(database));
 app.use('/api/v1/users', createUserRoutes(database));
+app.use('/api/v1/topics', createTopicRoutes(database));
+app.use('/api/v1/resources', createResourceRoutes(database));
 
 // Start server
 async function startServer() {
@@ -39,6 +43,8 @@ async function startServer() {
       console.log(`🏥 Health check: http://localhost:${port}/health`);
       console.log(`🧪 Database test: http://localhost:${port}/test`);
       console.log(`👥 Users API: http://localhost:${port}/api/v1/users`);
+      console.log(`📚 Topics API: http://localhost:${port}/api/v1/topics`);
+      console.log(`🔗 Resources API: http://localhost:${port}/api/v1/resources`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
