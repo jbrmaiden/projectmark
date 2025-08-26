@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../types';
+import { isValidEmail } from '../utils/validation';
 
 /**
  * User model class with validation and business logic
@@ -18,7 +19,7 @@ export class UserModel {
 
     if (!userData.email || userData.email.trim().length === 0) {
       errors.push('Email is required');
-    } else if (!this.isValidEmail(userData.email)) {
+    } else if (!isValidEmail(userData.email)) {
       errors.push('Invalid email format');
     }
 
@@ -54,13 +55,6 @@ export class UserModel {
       ...(updateData.name && { name: updateData.name.trim() })
     };
   }
-
-
-  private static isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
 
   private static generateId(): string {
     return uuidv4();
