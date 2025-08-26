@@ -1,0 +1,349 @@
+{
+  "info": {
+    "name": "Topic-Resource Connection API",
+    "description": "Postman collection for testing topic-resource connection endpoints in the Dynamic Knowledge Base API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "topicId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "resourceId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Topic-Resource Workflow",
+      "item": [
+        {
+          "name": "1. Create JavaScript Topic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('topicId', response.data.id);",
+                  "    console.log('Topic ID saved:', response.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"JavaScript Fundamentals\",\n  \"content\": \"Core concepts and syntax of JavaScript programming language including variables, functions, and control structures.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "2. Add MDN Article Resource",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('resourceId', response.data.id);",
+                  "    console.log('Resource ID saved:', response.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://developer.mozilla.org/en-US/docs/Web/JavaScript\",\n  \"description\": \"MDN JavaScript Documentation - Complete reference\",\n  \"type\": \"article\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "3. Add YouTube Video Resource",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://www.youtube.com/watch?v=PkZNo7MFNFg\",\n  \"description\": \"JavaScript Tutorial for Beginners - Learn JavaScript in 1 Hour\",\n  \"type\": \"video\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "4. Get Topic with All Resources",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Topic has resources', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data.resources).to.be.an('array');",
+                  "    pm.expect(response.resourceCount).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}/with-resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}", "with-resources"]
+            }
+          }
+        },
+        {
+          "name": "5. Get Only Topic Resources",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Resources returned', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "    pm.expect(response.count).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}", "resources"]
+            }
+          }
+        },
+        {
+          "name": "6. Get All Topics with Resource Counts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Topics have resource counts', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "    if (response.data.length > 0) {",
+                  "        pm.expect(response.data[0]).to.have.property('resourceCount');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics?includeResourceCount=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"],
+              "query": [
+                {
+                  "key": "includeResourceCount",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Individual Endpoints",
+      "item": [
+        {
+          "name": "Get All Topics with Resource Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics?includeResourceCount=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"],
+              "query": [
+                {
+                  "key": "includeResourceCount",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Topic with Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}/with-resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}", "with-resources"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}", "resources"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Testing",
+      "item": [
+        {
+          "name": "Get Non-existent Topic Resources",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 404 for non-existent topic', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/non-existent-id/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "non-existent-id", "resources"]
+            }
+          }
+        },
+        {
+          "name": "Get Non-existent Topic with Resources",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 404 for non-existent topic', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/non-existent-id/with-resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "non-existent-id", "with-resources"]
+            }
+          }
+        },
+        {
+          "name": "Create Resource with Invalid Topic ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 404 for invalid topic ID', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"invalid-topic-id\",\n  \"url\": \"https://example.com\",\n  \"description\": \"Test resource\",\n  \"type\": \"article\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

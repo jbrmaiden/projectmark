@@ -1,0 +1,581 @@
+{
+  "info": {
+    "name": "ProjectMark Knowledge Base API",
+    "description": "Complete API collection for testing Topics and Resources endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Core",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Database Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["test"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Topics",
+      "item": [
+        {
+          "name": "Create Topic",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"JavaScript Fundamentals\",\n  \"content\": \"Core concepts and syntax of JavaScript programming language including variables, functions, and control structures.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Child Topic",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ES6 Features\",\n  \"content\": \"Modern JavaScript features including arrow functions, destructuring, and modules.\",\n  \"parentTopicId\": \"{{parentTopicId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "Get All Topics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Root Topics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/parent/root",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "parent", "root"]
+            }
+          }
+        },
+        {
+          "name": "Get Child Topics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/parent/{{parentTopicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "parent", "{{parentTopicId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Topics with Resource Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics?includeResourceCount=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"],
+              "query": [
+                {
+                  "key": "includeResourceCount",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Topic with Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}/with-resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}", "with-resources"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}", "resources"]
+            }
+          }
+        },
+        {
+          "name": "Update Topic",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Advanced JavaScript Concepts\",\n  \"content\": \"Deep dive into advanced JavaScript topics including closures, prototypes, and async programming.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Topic",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resources",
+      "item": [
+        {
+          "name": "Create Resource for Topic",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://developer.mozilla.org/en-US/docs/Web/JavaScript\",\n  \"description\": \"MDN JavaScript Documentation - Comprehensive guide to JavaScript\",\n  \"type\": \"article\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "Create Video Resource",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://www.youtube.com/watch?v=PkZNo7MFNFg\",\n  \"description\": \"JavaScript Tutorial for Beginners - Learn JavaScript in 1 Hour\",\n  \"type\": \"video\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "Create PDF Resource",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://eloquentjavascript.net/Eloquent_JavaScript.pdf\",\n  \"description\": \"Eloquent JavaScript - A Modern Introduction to Programming\",\n  \"type\": \"pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "Get All Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "Get Resource by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/{{resourceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "{{resourceId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Resources by Topic",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/topic/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "topic", "{{topicId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Resources by Type - Video",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/type/video",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "type", "video"]
+            }
+          }
+        },
+        {
+          "name": "Get Resources by Type - Article",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/type/article",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "type", "article"]
+            }
+          }
+        },
+        {
+          "name": "Get Resources by Type - PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/type/pdf",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "type", "pdf"]
+            }
+          }
+        },
+        {
+          "name": "Update Resource",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated: MDN JavaScript Documentation - The most comprehensive JavaScript reference\",\n  \"type\": \"article\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/{{resourceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "{{resourceId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Resource",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/{{resourceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "{{resourceId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Topic-Resource Workflow",
+      "item": [
+        {
+          "name": "1. Create JavaScript Topic",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"JavaScript Fundamentals\",\n  \"content\": \"Core concepts and syntax of JavaScript programming language including variables, functions, and control structures.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "2. Add MDN Article Resource",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://developer.mozilla.org/en-US/docs/Web/JavaScript\",\n  \"description\": \"MDN JavaScript Documentation - Complete reference\",\n  \"type\": \"article\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "3. Add YouTube Video Resource",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://www.youtube.com/watch?v=PkZNo7MFNFg\",\n  \"description\": \"JavaScript Tutorial for Beginners - Learn JavaScript in 1 Hour\",\n  \"type\": \"video\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "4. Get Topic with All Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}/with-resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}", "with-resources"]
+            }
+          }
+        },
+        {
+          "name": "5. Get Only Topic Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}", "resources"]
+            }
+          }
+        },
+        {
+          "name": "6. Get All Topics with Resource Counts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics?includeResourceCount=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"],
+              "query": [
+                {
+                  "key": "includeResourceCount",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Testing",
+      "item": [
+        {
+          "name": "Create Topic - Invalid Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"content\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Resource - Invalid URL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": \"invalid-uuid\",\n  \"url\": \"not-a-valid-url\",\n  \"description\": \"Test resource\",\n  \"type\": \"invalid-type\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources"]
+            }
+          }
+        },
+        {
+          "name": "Get Non-existent Topic",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/00000000-0000-0000-0000-000000000000",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "00000000-0000-0000-0000-000000000000"]
+            }
+          }
+        },
+        {
+          "name": "Get Non-existent Resource",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/00000000-0000-0000-0000-000000000000",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "00000000-0000-0000-0000-000000000000"]
+            }
+          }
+        },
+        {
+          "name": "Get Resources by Invalid Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/resources/type/invalid-type",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "resources", "type", "invalid-type"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
