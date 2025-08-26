@@ -1,0 +1,733 @@
+{
+  "info": {
+    "name": "Topic Versioning API - Enhanced",
+    "description": "Comprehensive Postman collection for testing topic versioning functionality with enhanced workflows and validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "topicId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "baseTopicId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "version",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Core Versioning Workflow",
+      "description": "Complete workflow demonstrating topic versioning from creation to history retrieval",
+      "item": [
+        {
+          "name": "Create Initial Topic (v1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Topic created successfully', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data).to.have.property('id');",
+                  "    pm.expect(response.data).to.have.property('baseTopicId');",
+                  "    pm.expect(response.data.version).to.equal(1);",
+                  "    pm.expect(response.data.isLatest).to.be.true;",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('topicId', response.data.id);",
+                  "    pm.collectionVariables.set('baseTopicId', response.data.baseTopicId);",
+                  "    console.log('✅ Topic created successfully');",
+                  "    console.log('📝 Topic ID:', response.data.id);",
+                  "    console.log('🔗 Base Topic ID:', response.data.baseTopicId);",
+                  "    console.log('📊 Version:', response.data.version);",
+                  "    console.log('🏷️ Name:', response.data.name);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"JavaScript Fundamentals\",\n  \"content\": \"Introduction to JavaScript programming language basics including variables, functions, and control structures.\",\n  \"description\": \"Core JavaScript concepts for beginners\",\n  \"createdBy\": \"developer-001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "Update Topic (Creates v2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Topic updated successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data.version).to.equal(2);",
+                  "    pm.expect(response.data.isLatest).to.be.true;",
+                  "    pm.expect(response.versionInfo.newVersion).to.equal(2);",
+                  "    pm.expect(response.versionInfo.previousVersion).to.equal(1);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('topicId', response.data.id);",
+                  "    console.log('\\n🔄 === VERSION UPDATE SUMMARY ===');",
+                  "    console.log('📈 Previous version:', response.versionInfo.previousVersion);",
+                  "    console.log('📈 New version:', response.versionInfo.newVersion);",
+                  "    if (response.versionInfo.createdBy) console.log('👤 Created by:', response.versionInfo.createdBy);",
+                  "    console.log('\\n📝 === CONTENT CHANGES ===');",
+                  "    if (response.changes.name.changed) {",
+                  "        console.log('🏷️ Name changed:');",
+                  "        console.log('   From:', response.changes.name.from);",
+                  "        console.log('   To:', response.changes.name.to);",
+                  "    }",
+                  "    if (response.changes.content.changed) {",
+                  "        console.log('📄 Content changed:');",
+                  "        console.log('   From:', response.changes.content.from.substring(0, 60) + '...');",
+                  "        console.log('   To:', response.changes.content.to.substring(0, 60) + '...');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"JavaScript Fundamentals - Enhanced\",\n  \"content\": \"Comprehensive guide to JavaScript programming language including ES6+ features, modern syntax, async/await, promises, and practical examples with best practices.\",\n  \"description\": \"Enhanced JavaScript guide with modern features and best practices\",\n  \"createdBy\": \"developer-002\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Topic Again (Creates v3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Third version created successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data.version).to.equal(3);",
+                  "    pm.expect(response.versionInfo.newVersion).to.equal(3);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('topicId', response.data.id);",
+                  "    console.log('\\n🚀 Third version created successfully');",
+                  "    console.log('📈 Version:', response.data.version);",
+                  "    console.log('👤 Created by:', response.versionInfo.createdBy);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Advanced JavaScript Fundamentals\",\n  \"content\": \"Complete guide to JavaScript including ES6+, async/await, modules, advanced concepts like closures and prototypes, performance optimization techniques, testing strategies, and real-world project examples.\",\n  \"description\": \"Comprehensive JavaScript guide with advanced topics and practical applications\",\n  \"createdBy\": \"senior-developer\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Topic history retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data.versions).to.be.an('array');",
+                  "    pm.expect(response.data.versions.length).to.equal(3);",
+                  "    pm.expect(response.data.currentVersion).to.equal(3);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    console.log('\\n📚 === TOPIC HISTORY ===');",
+                  "    console.log('🔗 Base Topic ID:', response.data.baseTopicId);",
+                  "    console.log('📊 Current Version:', response.data.currentVersion);",
+                  "    console.log('📝 Total Versions:', response.data.versions.length);",
+                  "    response.data.versions.forEach((v, i) => {",
+                  "        const topic = v.topic;",
+                  "        console.log(`\\n📄 Version ${v.version}:`);",
+                  "        console.log('   ID:', topic.id);",
+                  "        console.log('   Name:', topic.name);",
+                  "        console.log('   Latest:', topic.isLatest ? '✅' : '❌');",
+                  "        if (topic.createdBy) console.log('   Created by:', topic.createdBy);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/history/{{baseTopicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "history", "{{baseTopicId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Version Retrieval",
+      "description": "Test specific version retrieval endpoints",
+      "item": [
+        {
+          "name": "Get Latest Version",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Latest version retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data.isLatest).to.be.true;",
+                  "    pm.expect(response.data.version).to.equal(3);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/version/{{baseTopicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "version", "{{baseTopicId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Version (v1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Version 1 retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data.version).to.equal(1);",
+                  "    pm.expect(response.data.isLatest).to.be.false;",
+                  "    pm.expect(response.data.name).to.equal('JavaScript Fundamentals');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/version/{{baseTopicId}}/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "version", "{{baseTopicId}}", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Version (v2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Version 2 retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data.version).to.equal(2);",
+                  "    pm.expect(response.data.isLatest).to.be.false;",
+                  "    pm.expect(response.data.name).to.equal('JavaScript Fundamentals - Enhanced');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/version/{{baseTopicId}}/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "version", "{{baseTopicId}}", "2"]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Version (v3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Version 3 retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data.version).to.equal(3);",
+                  "    pm.expect(response.data.isLatest).to.be.true;",
+                  "    pm.expect(response.data.name).to.equal('Advanced JavaScript Fundamentals');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/version/{{baseTopicId}}/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "version", "{{baseTopicId}}", "3"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Topic Listing",
+      "description": "Test topic listing with version filtering",
+      "item": [
+        {
+          "name": "Get All Topics (Latest Only - Default)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Only latest versions returned by default', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    response.data.forEach(topic => {",
+                  "        pm.expect(topic.isLatest).to.be.true;",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "Get All Topics (Explicit Latest Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Only latest versions returned', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    response.data.forEach(topic => {",
+                  "        pm.expect(topic.isLatest).to.be.true;",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics?onlyLatest=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"],
+              "query": [
+                {
+                  "key": "onlyLatest",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Topics (All Versions)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('All versions returned', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    const latestCount = response.data.filter(t => t.isLatest).length;",
+                  "    const oldCount = response.data.filter(t => !t.isLatest).length;",
+                  "    pm.expect(oldCount).to.be.above(0);",
+                  "    console.log('Latest versions:', latestCount);",
+                  "    console.log('Old versions:', oldCount);",
+                  "    console.log('Total versions:', response.data.length);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics?onlyLatest=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"],
+              "query": [
+                {
+                  "key": "onlyLatest",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Resource Integration",
+      "description": "Test versioning with resource relationships",
+      "item": [
+        {
+          "name": "Get Latest Version with Resources",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Version with resources endpoint works', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data.topic).to.have.property('version');",
+                  "    pm.expect(response.data.resources).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/version/{{baseTopicId}}/with-resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "version", "{{baseTopicId}}", "with-resources"]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Version with Resources",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Specific version with resources works', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data.topic.version).to.equal(2);",
+                  "    pm.expect(response.data.resources).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/version/{{baseTopicId}}/2/with-resources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "version", "{{baseTopicId}}", "2", "with-resources"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Error Handling",
+      "description": "Test error scenarios and edge cases",
+      "item": [
+        {
+          "name": "Get Non-existent Version",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 404 for non-existent version', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/version/{{baseTopicId}}/999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "version", "{{baseTopicId}}", "999"]
+            }
+          }
+        },
+        {
+          "name": "Get History for Non-existent Topic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 404 for non-existent topic', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/history/non-existent-id-12345",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "history", "non-existent-id-12345"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Version Number",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 for invalid version', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/version/{{baseTopicId}}/invalid-version",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "version", "{{baseTopicId}}", "invalid-version"]
+            }
+          }
+        },
+        {
+          "name": "Update Non-existent Topic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 404 for non-existent topic update', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Topic\",\n  \"content\": \"This should fail\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/non-existent-topic-id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "non-existent-topic-id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Validation Testing",
+      "description": "Test input validation and data integrity",
+      "item": [
+        {
+          "name": "Create Topic with Invalid Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 for invalid topic data', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response.error).to.include('Validation failed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"content\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics"]
+            }
+          }
+        },
+        {
+          "name": "Update Topic with Invalid Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 for invalid update data', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"content\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topics/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topics", "{{topicId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
