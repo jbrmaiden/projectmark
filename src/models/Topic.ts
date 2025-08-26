@@ -3,7 +3,7 @@ import { Topic } from '../types';
 import { isValidUUID } from '../utils/validation';
 
 /**
- * Topic model class with validation and business logic
+ * Topic model class with validation and versioning business logic
  */
 export class TopicModel {
   /**
@@ -31,6 +31,11 @@ export class TopicModel {
       errors.push('Parent topic ID must be a valid UUID');
     }
 
+    // Validate baseTopicId format if provided
+    if (topicData.baseTopicId && !isValidUUID(topicData.baseTopicId)) {
+      errors.push('Base topic ID must be a valid UUID');
+    }
+
     return {
       isValid: errors.length === 0,
       errors
@@ -38,42 +43,84 @@ export class TopicModel {
   }
 
   /**
-   * Create a new topic with default values
+   * Create a new topic (version 1) with default values
    */
-  static create(topicData: Omit<Topic, 'id' | 'createdAt' | 'updatedAt' | 'version'>): Topic {
+  static create(topicData: Omit<Topic, 'id' | 'baseTopicId' | 'createdAt' | 'updatedAt' | 'version' | 'isLatest'>): Topic {
     const now = new Date().toISOString();
+    const baseTopicId = this.generateId();
+    
     return {
       id: this.generateId(),
+      baseTopicId: baseTopicId,
       name: topicData.name.trim(),
       content: topicData.content.trim(),
       createdAt: now,
       updatedAt: now,
       version: 1,
-      ...(topicData.parentTopicId && { parentTopicId: topicData.parentTopicId })
+      isLatest: true,
+      ...(topicData.description && { description: topicData.description.trim() }),
+      ...(topicData.parentTopicId && { parentTopicId: topicData.parentTopicId }),
+      ...(topicData.createdBy && { createdBy: topicData.createdBy })
     };
   }
 
   /**
-   * Update topic data while preserving immutable fields and incrementing version
+   * Create a new version of an existing topic
    */
-  static update(existingTopic: Topic, updateData: Partial<Omit<Topic, 'id' | 'createdAt' | 'version'>>): Topic {
-    return {
+  static createVersion(
+    existingTopic: Topic, 
+    updateData: Partial<Omit<Topic, 'id' | 'baseTopicId' | 'createdAt' | 'version' | 'isLatest'>>,
+    createdBy?: string
+  ): Topic {
+    const now = new Date().toISOString();
+    
+    const newVersion: Topic = {
       ...existingTopic,
       ...updateData,
-      // Preserve immutable fields
-      id: existingTopic.id,
-      createdAt: existingTopic.createdAt,
-      // Increment version on update
+      // New unique ID for this version
+      id: this.generateId(),
+      // Keep same baseTopicId to link versions
+      baseTopicId: existingTopic.baseTopicId,
+      // Increment version
       version: existingTopic.version + 1,
-      // Update timestamp
-      updatedAt: new Date().toISOString(),
+      // This becomes the latest version
+      isLatest: true,
+      // Update timestamps
+      createdAt: now,
+      updatedAt: now,
       // Clean data if provided
       ...(updateData.name && { name: updateData.name.trim() }),
-      ...(updateData.content && { content: updateData.content.trim() })
+      ...(updateData.content && { content: updateData.content.trim() }),
+      ...(updateData.description && { description: updateData.description.trim() })
+    };
+
+    // Only add createdBy if provided
+    if (createdBy) {
+      newVersion.createdBy = createdBy;
+    }
+
+    return newVersion;
+  }
+
+  /**
+   * Mark a topic version as no longer the latest
+   */
+  static markAsOldVersion(topic: Topic): Topic {
+    return {
+      ...topic,
+      isLatest: false,
+      updatedAt: new Date().toISOString()
     };
   }
 
- 
+  /**
+   * Update topic data (legacy method - now creates new version)
+   * @deprecated Use createVersion instead for proper versioning
+   */
+  static update(existingTopic: Topic, updateData: Partial<Omit<Topic, 'id' | 'createdAt' | 'version'>>): Topic {
+    return this.createVersion(existingTopic, updateData);
+  }
+
   private static generateId(): string {
     return uuidv4();
   }

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IDatabase } from '../database/interfaces/IDatabase';
-import { Topic, Resource } from '../types';
+import { Topic, Resource, TopicHistory } from '../types';
 import { TopicModel } from '../models/Topic';
 
 export class TopicController {
@@ -8,15 +8,17 @@ export class TopicController {
 
   async getAllTopics(req: Request, res: Response): Promise<void> {
     try {
-      const topics = await this.database.find<Topic>('topics');
-      
-      // Optionally include resource counts
+      const onlyLatest = req.query.onlyLatest !== 'false'; // Default to true
       const includeResourceCount = req.query.includeResourceCount === 'true';
+      
+      // Get topics (latest versions only by default)
+      const criteria = onlyLatest ? { isLatest: true } : {};
+      const topics = await this.database.find<Topic>('topics', criteria);
       
       if (includeResourceCount) {
         const topicsWithResourceCount = await Promise.all(
           topics.map(async (topic) => {
-            const resources = await this.database.find<Resource>('resources', { topicId: topic.id });
+            const resources = await this.database.find<Resource>('resources', { topicId: topic.baseTopicId });
             return {
               ...topic,
               resourceCount: resources.length
@@ -133,8 +135,9 @@ export class TopicController {
         return;
       }
       const updateData = req.body;
+      const { createdBy } = req.body;
 
-      // Find existing topic
+      // Find existing topic (should be latest version)
       const existingTopic = await this.database.findById<Topic>('topics', id);
       if (!existingTopic) {
         res.status(404).json({
@@ -157,7 +160,7 @@ export class TopicController {
 
       // If updating parentTopicId, verify it exists and isn't creating a circular reference
       if (updateData.parentTopicId && updateData.parentTopicId !== existingTopic.parentTopicId) {
-        if (updateData.parentTopicId === id) {
+        if (updateData.parentTopicId === existingTopic.baseTopicId) {
           res.status(400).json({
             success: false,
             error: 'Topic cannot be its own parent'
@@ -165,8 +168,8 @@ export class TopicController {
           return;
         }
 
-        const parentTopic = await this.database.findById<Topic>('topics', updateData.parentTopicId);
-        if (!parentTopic) {
+        const parentTopic = await this.database.find<Topic>('topics', { baseTopicId: updateData.parentTopicId, isLatest: true });
+        if (parentTopic.length === 0) {
           res.status(400).json({
             success: false,
             error: 'Parent topic not found'
@@ -175,13 +178,41 @@ export class TopicController {
         }
       }
 
-      // Update topic
-      const updatedTopicData = TopicModel.update(existingTopic, updateData);
-      const updatedTopic = await this.database.updateById<Topic>('topics', id, updatedTopicData);
+      // Create new version instead of updating
+      const newVersion = TopicModel.createVersion(existingTopic, updateData, createdBy);
+      
+      // Mark old version as no longer latest
+      const oldVersion = TopicModel.markAsOldVersion(existingTopic);
+      await this.database.updateById<Topic>('topics', existingTopic.id, oldVersion);
+      
+      // Create new version
+      const createdVersion = await this.database.create<Topic>('topics', newVersion);
 
       res.json({
         success: true,
-        data: updatedTopic
+        data: createdVersion,
+        versionInfo: {
+          previousVersion: existingTopic.version,
+          newVersion: newVersion.version,
+          createdBy: createdBy
+        },
+        changes: {
+          name: {
+            from: existingTopic.name,
+            to: newVersion.name,
+            changed: existingTopic.name !== newVersion.name
+          },
+          content: {
+            from: existingTopic.content,
+            to: newVersion.content,
+            changed: existingTopic.content !== newVersion.content
+          },
+          description: {
+            from: existingTopic.description ?? '',
+            to: newVersion.description ?? '',
+            changed: existingTopic.description !== newVersion.description
+          },
+        }
       });
     } catch (error) {
       console.error('Error updating topic:', error);
@@ -348,6 +379,163 @@ export class TopicController {
       });
     } catch (error) {
       console.error('Error fetching topic resources:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  async getTopicVersion(req: Request, res: Response): Promise<void> {
+    try {
+      const { baseTopicId, version } = req.params;
+      if (!baseTopicId) {
+        res.status(400).json({
+          success: false,
+          error: 'Base topic ID is required'
+        });
+        return;
+      }
+
+      const versionNumber = version ? parseInt(version, 10) : undefined;
+      if (version && (isNaN(versionNumber!) || versionNumber! < 1)) {
+        res.status(400).json({
+          success: false,
+          error: 'Version must be a positive integer'
+        });
+        return;
+      }
+
+      // Find specific version or latest
+      const criteria = versionNumber 
+        ? { baseTopicId, version: versionNumber }
+        : { baseTopicId, isLatest: true };
+      
+      const topics = await this.database.find<Topic>('topics', criteria);
+      
+      if (topics.length === 0) {
+        res.status(404).json({
+          success: false,
+          error: versionNumber ? `Version ${versionNumber} not found` : 'Topic not found'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: topics[0]
+      });
+    } catch (error) {
+      console.error('Error fetching topic version:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  async getTopicHistory(req: Request, res: Response): Promise<void> {
+    try {
+      const { baseTopicId } = req.params;
+      if (!baseTopicId) {
+        res.status(400).json({
+          success: false,
+          error: 'Base topic ID is required'
+        });
+        return;
+      }
+
+      // Get all versions of this topic
+      const allVersions = await this.database.find<Topic>('topics', { baseTopicId });
+      
+      if (allVersions.length === 0) {
+        res.status(404).json({
+          success: false,
+          error: 'Topic not found'
+        });
+        return;
+      }
+
+      // Sort by version number
+      allVersions.sort((a, b) => a.version - b.version);
+      
+      const latestVersion = allVersions.find(v => v.isLatest);
+      const lastVersion = allVersions[allVersions.length - 1];
+      const currentVersion = latestVersion ? latestVersion.version : (lastVersion ? lastVersion.version : 1);
+
+      const history: TopicHistory = {
+        baseTopicId,
+        currentVersion,
+        versions: allVersions.map(topic => ({
+          baseTopicId: topic.baseTopicId,
+          version: topic.version,
+          topic
+        }))
+      };
+
+      res.json({
+        success: true,
+        data: history
+      });
+    } catch (error) {
+      console.error('Error fetching topic history:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  async getTopicVersionWithResources(req: Request, res: Response): Promise<void> {
+    try {
+      const { baseTopicId, version } = req.params;
+      if (!baseTopicId) {
+        res.status(400).json({
+          success: false,
+          error: 'Base topic ID is required'
+        });
+        return;
+      }
+
+      const versionNumber = version ? parseInt(version, 10) : undefined;
+      if (version && (isNaN(versionNumber!) || versionNumber! < 1)) {
+        res.status(400).json({
+          success: false,
+          error: 'Version must be a positive integer'
+        });
+        return;
+      }
+
+      // Find specific version or latest
+      const criteria = versionNumber 
+        ? { baseTopicId, version: versionNumber }
+        : { baseTopicId, isLatest: true };
+      
+      const topics = await this.database.find<Topic>('topics', criteria);
+      
+      if (topics.length === 0) {
+        res.status(404).json({
+          success: false,
+          error: versionNumber ? `Version ${versionNumber} not found` : 'Topic not found'
+        });
+        return;
+      }
+
+      const topic = topics[0];
+      
+      // Get resources linked to this base topic (resources are linked to baseTopicId, not version-specific)
+      const resources = await this.database.find<Resource>('resources', { topicId: baseTopicId });
+
+      res.json({
+        success: true,
+        data: {
+          ...topic,
+          resources
+        },
+        resourceCount: resources.length
+      });
+    } catch (error) {
+      console.error('Error fetching topic version with resources:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error'
