@@ -4,8 +4,10 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { InMemoryDatabase } from './database/implementations/InMemoryDatabase';
+import { PermissionServiceFactory } from './services/PermissionServiceFactory';
 import { createUserRoutes } from './routes/userRoutes';
 import { createTopicRoutes } from './routes/topicRoutes';
+import { createTopicRoutesWithPermissions } from './routes/topicRoutesWithPermissions';
 import { createResourceRoutes } from './routes/resourceRoutes';
 import { createCoreRoutes } from './routes/coreRoutes';
 
@@ -21,22 +23,26 @@ app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
 
-// Initialize database
+// Initialize database and services
 async function initDatabase() {
   await database.connect({ type: 'memory' });
   console.log('✅ Database connected');
+  
+  // Initialize PermissionService with real database
+  PermissionServiceFactory.initialize(database);
+  console.log('✅ PermissionService initialized');
 }
-
-// Routes
-app.use('/', createCoreRoutes(database));
-app.use('/api/v1/users', createUserRoutes(database));
-app.use('/api/v1/topics', createTopicRoutes(database));
-app.use('/api/v1/resources', createResourceRoutes(database));
 
 // Start server
 async function startServer() {
   try {
     await initDatabase();
+    
+    // Setup routes after database and services are initialized
+    app.use('/', createCoreRoutes(database));
+    app.use('/api/v1/users', createUserRoutes(database));
+    app.use('/api/v1/topics', createTopicRoutesWithPermissions(database));
+    app.use('/api/v1/resources', createResourceRoutes(database));
     
     app.listen(port, () => {
       console.log(`🚀 Knowledge Base API running on http://localhost:${port}`);

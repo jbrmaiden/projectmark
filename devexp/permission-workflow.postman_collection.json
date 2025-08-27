@@ -1,0 +1,944 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "ProjectMark Permissions Workflow",
+		"description": "Complete workflow testing for ProjectMark permissions system including user creation, topic management, and permission granting/testing.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Setup - Create Test Users",
+			"item": [
+				{
+					"name": "Create Admin User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('adminUserId', response.data.id);",
+									"    pm.test('Admin user created successfully', () => {",
+									"        pm.expect(response.success).to.be.true;",
+									"        pm.expect(response.data.role).to.equal('Admin');",
+									"    });",
+									"} else {",
+									"    pm.test('Admin user creation failed', () => {",
+									"        pm.expect.fail('Expected 201 status');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Admin User\",\n    \"email\": \"admin@projectmark.com\",\n    \"role\": \"Admin\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Editor User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('editorUserId', response.data.id);",
+									"    pm.test('Editor user created successfully', () => {",
+									"        pm.expect(response.success).to.be.true;",
+									"        pm.expect(response.data.role).to.equal('Editor');",
+									"    });",
+									"} else {",
+									"    pm.test('Editor user creation failed', () => {",
+									"        pm.expect.fail('Expected 201 status');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Editor User\",\n    \"email\": \"editor@projectmark.com\",\n    \"role\": \"Editor\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Viewer User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('viewerUserId', response.data.id);",
+									"    pm.test('Viewer user created successfully', () => {",
+									"        pm.expect(response.success).to.be.true;",
+									"        pm.expect(response.data.role).to.equal('Viewer');",
+									"    });",
+									"} else {",
+									"    pm.test('Viewer user creation failed', () => {",
+									"        pm.expect.fail('Expected 201 status');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Viewer User\",\n    \"email\": \"viewer@projectmark.com\",\n    \"role\": \"Viewer\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Topic Management",
+			"item": [
+				{
+					"name": "Create Topic (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('testTopicId', response.data.id);",
+									"    pm.test('Topic created successfully by Admin', () => {",
+									"        pm.expect(response.success).to.be.true;",
+									"        pm.expect(response.data.name).to.equal('Permissions Test Topic');",
+									"    });",
+									"} else {",
+									"    pm.test('Topic creation failed', () => {",
+									"        pm.expect.fail('Expected 201 status');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-user-id",
+								"value": "{{adminUserId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Permissions Test Topic\",\n    \"description\": \"Topic for testing the permissions system\",\n    \"content\": \"This topic will be used to test various permission scenarios including role-based access and specific permission grants.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics"
+							]
+						}
+					}
+				},
+				{
+					"name": "Try Create Topic (Viewer) - Should Fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Viewer cannot create topics', () => {",
+									"    pm.expect(pm.response.code).to.equal(401);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    pm.expect(response.error).to.include('Authentication required');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-user-id",
+								"value": "{{viewerUserId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Unauthorized Topic\",\n    \"description\": \"This should fail\",\n    \"content\": \"Viewer trying to create topic\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Authentication Tests",
+			"item": [
+				{
+					"name": "Access Topic Without Auth - Should Fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Unauthenticated access denied', () => {",
+									"    pm.expect(pm.response.code).to.equal(401);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    pm.expect(response.error).to.include('Authentication required');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Role-Based Access Tests",
+			"item": [
+				{
+					"name": "Admin Access Topic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Admin can access topic', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.id).to.equal(pm.collectionVariables.get('testTopicId'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "{{adminUserId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Editor Access Topic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Editor can access topic (role-based)', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.id).to.equal(pm.collectionVariables.get('testTopicId'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "{{editorUserId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Viewer Access Topic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Viewer can access topic (role-based)', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.id).to.equal(pm.collectionVariables.get('testTopicId'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "{{viewerUserId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Permission Management",
+			"item": [
+				{
+					"name": "Grant Editor Permission to Viewer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Admin can grant permissions', () => {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.permission).to.equal('editor');",
+									"    pm.expect(response.data.userId).to.equal(pm.collectionVariables.get('viewerUserId'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-user-id",
+								"value": "{{adminUserId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": \"{{viewerUserId}}\",\n    \"permission\": \"editor\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}/permissions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}",
+								"permissions"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Topic Permissions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Admin can view topic permissions', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data).to.be.an('array');",
+									"    pm.expect(response.data.length).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "{{adminUserId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}/permissions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}",
+								"permissions"
+							]
+						}
+					}
+				},
+				{
+					"name": "Try Grant Permission as Editor - Should Fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Editor cannot grant permissions (requires owner)', () => {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    pm.expect(response.error).to.include('Insufficient permissions');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-user-id",
+								"value": "{{editorUserId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": \"{{viewerUserId}}\",\n    \"permission\": \"viewer\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}/permissions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}",
+								"permissions"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Topic Operations Tests",
+			"item": [
+				{
+					"name": "Update Topic (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Admin can update topic', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.name).to.equal('Updated Permissions Test Topic');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-user-id",
+								"value": "{{adminUserId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Permissions Test Topic\",\n    \"description\": \"Updated by Admin user\",\n    \"content\": \"This topic has been updated to test admin permissions.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Topic (Viewer with Editor Permission)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Viewer with editor permission can update topic', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.name).to.equal('Updated by Viewer with Editor Permission');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-user-id",
+								"value": "{{viewerUserId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated by Viewer with Editor Permission\",\n    \"description\": \"Viewer user now has editor permission on this topic\",\n    \"content\": \"This demonstrates specific permission grants overriding role-based permissions.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Try Delete Topic (Editor) - Should Fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Editor cannot delete topic (requires owner permission)', () => {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    pm.expect(response.error).to.include('Insufficient permissions');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "{{editorUserId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Advanced Permission Tests",
+			"item": [
+				{
+					"name": "Revoke Permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Admin can revoke permissions', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "{{adminUserId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}/permissions/{{viewerUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}",
+								"permissions",
+								"{{viewerUserId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Try Update After Permission Revoked - Should Fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Viewer cannot update after permission revoked', () => {",
+									"    pm.expect(pm.response.code).to.equal(403);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.false;",
+									"    pm.expect(response.error).to.include('Insufficient permissions');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-user-id",
+								"value": "{{viewerUserId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"This Should Fail\",\n    \"description\": \"Viewer trying to update after permission revoked\",\n    \"content\": \"This should not work.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Viewer Can Still Read (Role-Based)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Viewer can still read topic (role-based access)', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.id).to.equal(pm.collectionVariables.get('testTopicId'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "{{viewerUserId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Cleanup",
+			"item": [
+				{
+					"name": "Delete Test Topic (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Admin can delete topic', () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-user-id",
+								"value": "{{adminUserId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/topics/{{testTopicId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"{{testTopicId}}"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "adminUserId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "editorUserId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "viewerUserId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "testTopicId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
