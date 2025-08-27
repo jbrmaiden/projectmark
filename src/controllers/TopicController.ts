@@ -2,9 +2,14 @@ import { Request, Response } from 'express';
 import { IDatabase } from '../database/interfaces/IDatabase';
 import { Topic, Resource, TopicHistory } from '../types';
 import { TopicModel } from '../models/Topic';
+import { TopicTreeService } from '../services/TopicTreeService';
 
 export class TopicController {
-  constructor(private database: IDatabase) {}
+  private topicTreeService: TopicTreeService;
+
+  constructor(private database: IDatabase) {
+    this.topicTreeService = new TopicTreeService(database);
+  }
 
   async getAllTopics(req: Request, res: Response): Promise<void> {
     try {
@@ -107,7 +112,7 @@ export class TopicController {
         }
       }
 
-      // Create topic
+      // Create topic using strategy pattern - handles both provided and auto-generated IDs
       const newTopic = TopicModel.create(topicData);
       const createdTopic = await this.database.create<Topic>('topics', newTopic);
 
@@ -536,6 +541,132 @@ export class TopicController {
       });
     } catch (error) {
       console.error('Error fetching topic version with resources:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Get topic tree - retrieves a topic and all its subtopics recursively
+   */
+  async getTopicTree(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const onlyLatest = req.query.onlyLatest !== 'false';
+      
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Topic ID is required'
+        });
+        return;
+      }
+
+      const topicTree = await this.topicTreeService.buildTopicTree(id, onlyLatest);
+      
+      if (!topicTree) {
+        res.status(404).json({
+          success: false,
+          error: 'Topic not found'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: topicTree.toJSON()
+      });
+    } catch (error) {
+      console.error('Error fetching topic tree:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Get all topic trees - retrieves all root topics and their hierarchies
+   */
+  async getAllTopicTrees(req: Request, res: Response): Promise<void> {
+    try {
+      const onlyLatest = req.query.onlyLatest !== 'false';
+      
+      const topicTrees = await this.topicTreeService.buildAllTopicTrees(onlyLatest);
+      
+      res.json({
+        success: true,
+        data: topicTrees.map(tree => tree.toJSON()),
+        count: topicTrees.length
+      });
+    } catch (error) {
+      console.error('Error fetching all topic trees:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Get topic path - retrieves the path from root to the specified topic
+   */
+  async getTopicPath(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const onlyLatest = req.query.onlyLatest !== 'false';
+      
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Topic ID is required'
+        });
+        return;
+      }
+
+      const path = await this.topicTreeService.getTopicPath(id, onlyLatest);
+      
+      res.json({
+        success: true,
+        data: path,
+        depth: path.length
+      });
+    } catch (error) {
+      console.error('Error fetching topic path:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Get topic descendants - retrieves all descendants of a topic (flattened)
+   */
+  async getTopicDescendants(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const onlyLatest = req.query.onlyLatest !== 'false';
+      
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Topic ID is required'
+        });
+        return;
+      }
+
+      const descendants = await this.topicTreeService.getTopicDescendants(id, onlyLatest);
+      
+      res.json({
+        success: true,
+        data: descendants,
+        count: descendants.length
+      });
+    } catch (error) {
+      console.error('Error fetching topic descendants:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error'
