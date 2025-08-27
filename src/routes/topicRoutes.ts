@@ -71,6 +71,12 @@ export function createTopicRoutes(database: IDatabase): Router {
     await topicController.getAllTopicTrees(req, res);
   });
 
+  // Find shortest path between two topics (bidirectional BFS)
+  router.get('/shortest-path/:startTopicId/:endTopicId', async (req, res) => {
+    await topicController.findShortestPath(req, res);
+  });
+
+
   // Get topic by ID
   router.get('/:id', async (req, res) => {
     await topicController.getTopicById(req, res);
