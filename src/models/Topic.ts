@@ -44,20 +44,24 @@ export class TopicModel {
 
   /**
    * Create a new topic (version 1) with default values
+   * Supports both auto-generated IDs and provided IDs
    */
-  static create(topicData: Omit<Topic, 'id' | 'baseTopicId' | 'createdAt' | 'updatedAt' | 'version' | 'isLatest'>): Topic {
+  static create(topicData: Partial<Topic>): Topic {
     const now = new Date().toISOString();
-    const baseTopicId = this.generateId();
+    
+    // Strategy: Use provided IDs if available, otherwise generate them
+    const id = topicData.id || this.generateId();
+    const baseTopicId = topicData.baseTopicId || topicData.id || this.generateId();
     
     return {
-      id: this.generateId(),
-      baseTopicId: baseTopicId,
-      name: topicData.name.trim(),
-      content: topicData.content.trim(),
+      id,
+      baseTopicId,
+      name: topicData.name!.trim(),
+      content: topicData.content!.trim(),
       createdAt: now,
       updatedAt: now,
-      version: 1,
-      isLatest: true,
+      version: topicData.version || 1,
+      isLatest: topicData.isLatest !== false,
       ...(topicData.description && { description: topicData.description.trim() }),
       ...(topicData.parentTopicId && { parentTopicId: topicData.parentTopicId }),
       ...(topicData.createdBy && { createdBy: topicData.createdBy })

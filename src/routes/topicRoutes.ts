@@ -51,6 +51,26 @@ export function createTopicRoutes(database: IDatabase): Router {
     await topicController.getTopicResources(req, res);
   });
 
+  // Get topic tree (hierarchical structure)
+  router.get('/:id/tree', async (req, res) => {
+    await topicController.getTopicTree(req, res);
+  });
+
+  // Get topic path (from root to topic)
+  router.get('/:id/path', async (req, res) => {
+    await topicController.getTopicPath(req, res);
+  });
+
+  // Get topic descendants (flattened list)
+  router.get('/:id/descendants', async (req, res) => {
+    await topicController.getTopicDescendants(req, res);
+  });
+
+  // Get all topic trees (all root topics with their hierarchies)
+  router.get('/trees/all', async (req, res) => {
+    await topicController.getAllTopicTrees(req, res);
+  });
+
   // Get topic by ID
   router.get('/:id', async (req, res) => {
     await topicController.getTopicById(req, res);

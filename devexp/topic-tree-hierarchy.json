@@ -1,0 +1,426 @@
+{
+  "info": {
+    "name": "Hierarchical Topics API",
+    "description": "Complete test collection for hierarchical topics functionality using Composite pattern",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup Test Data",
+      "item": [
+        {
+          "name": "Create Root Topic - Programming Languages",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"baseTopicId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"name\": \"Programming Languages\",\n  \"content\": \"Overview of programming languages and their ecosystems\",\n  \"version\": 1,\n  \"isLatest\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Child Topic - JavaScript",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"baseTopicId\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"name\": \"JavaScript\",\n  \"content\": \"JavaScript programming language - dynamic, interpreted language\",\n  \"parentTopicId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"version\": 1,\n  \"isLatest\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Child Topic - Python",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440003\",\n  \"baseTopicId\": \"550e8400-e29b-41d4-a716-446655440003\",\n  \"name\": \"Python\",\n  \"content\": \"Python programming language - high-level, interpreted language\",\n  \"parentTopicId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"version\": 1,\n  \"isLatest\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Grandchild Topic - React",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440004\",\n  \"baseTopicId\": \"550e8400-e29b-41d4-a716-446655440004\",\n  \"name\": \"React\",\n  \"content\": \"React JavaScript library for building user interfaces\",\n  \"parentTopicId\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"version\": 1,\n  \"isLatest\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Grandchild Topic - Vue.js",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440005\",\n  \"baseTopicId\": \"550e8400-e29b-41d4-a716-446655440005\",\n  \"name\": \"Vue.js\",\n  \"content\": \"Vue.js progressive JavaScript framework\",\n  \"parentTopicId\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"version\": 1,\n  \"isLatest\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Grandchild Topic - Django",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440006\",\n  \"baseTopicId\": \"550e8400-e29b-41d4-a716-446655440006\",\n  \"name\": \"Django\",\n  \"content\": \"Django high-level Python web framework\",\n  \"parentTopicId\": \"550e8400-e29b-41d4-a716-446655440003\",\n  \"version\": 1,\n  \"isLatest\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Second Root Topic - Databases",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440007\",\n  \"baseTopicId\": \"550e8400-e29b-41d4-a716-446655440007\",\n  \"name\": \"Databases\",\n  \"content\": \"Database systems and technologies\",\n  \"version\": 1,\n  \"isLatest\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            }
+          }
+        },
+        {
+          "name": "Create Database Child - SQL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440008\",\n  \"baseTopicId\": \"550e8400-e29b-41d4-a716-446655440008\",\n  \"name\": \"SQL Databases\",\n  \"content\": \"Relational database management systems\",\n  \"parentTopicId\": \"550e8400-e29b-41d4-a716-446655440007\",\n  \"version\": 1,\n  \"isLatest\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hierarchical Topic Endpoints",
+      "item": [
+        {
+          "name": "Get Topic Tree - Programming Languages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440001/tree",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440001", "tree"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Tree - JavaScript",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440002/tree",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440002", "tree"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Tree - React (Leaf Node)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440004/tree",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440004", "tree"]
+            }
+          }
+        },
+        {
+          "name": "Get All Topic Trees",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/trees/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "trees", "all"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Path - React to Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440004/path",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440004", "path"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Path - Vue.js to Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440005/path",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440005", "path"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Path - Django to Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440006/path",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440006", "path"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Descendants - Programming Languages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440001/descendants",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440001", "descendants"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Descendants - JavaScript",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440002/descendants",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440002", "descendants"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Descendants - Python",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440003/descendants",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440003", "descendants"]
+            }
+          }
+        },
+        {
+          "name": "Get Topic Descendants - Databases",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440007/descendants",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440007", "descendants"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Edge Cases & Error Testing",
+      "item": [
+        {
+          "name": "Get Tree - Non-existent Topic",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-999999999999/tree",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-999999999999", "tree"]
+            }
+          }
+        },
+        {
+          "name": "Get Path - Non-existent Topic",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-999999999999/path",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-999999999999", "path"]
+            }
+          }
+        },
+        {
+          "name": "Get Descendants - Non-existent Topic",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-999999999999/descendants",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-999999999999", "descendants"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Query Parameter Testing",
+      "item": [
+        {
+          "name": "Get Tree - Only Latest Versions (default)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440001/tree?onlyLatest=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440001", "tree"],
+              "query": [
+                {
+                  "key": "onlyLatest",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tree - All Versions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/550e8400-e29b-41d4-a716-446655440001/tree?onlyLatest=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "550e8400-e29b-41d4-a716-446655440001", "tree"],
+              "query": [
+                {
+                  "key": "onlyLatest",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Trees - Only Latest",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/trees/all?onlyLatest=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "trees", "all"],
+              "query": [
+                {
+                  "key": "onlyLatest",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
