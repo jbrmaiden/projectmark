@@ -46,6 +46,7 @@ export class ResourceModel {
     const now = new Date().toISOString();
     return {
       id: this.generateId(),
+      name: resourceData.name.trim(),
       topicId: resourceData.topicId.trim(),
       url: resourceData.url.trim(),
       description: resourceData.description.trim(),

@@ -3,6 +3,13 @@ import { IDatabase } from '../database/interfaces/IDatabase';
 import { Topic, Resource, TopicHistory } from '../types';
 import { TopicModel } from '../models/Topic';
 import { TopicTreeService } from '../services/TopicTreeService';
+import { 
+  ValidationError, 
+  NotFoundError, 
+  ConflictError, 
+  formatErrorResponse,
+  withDatabaseErrorHandling 
+} from '../utils/errorHandler';
 
 export class TopicController {
   private topicTreeService: TopicTreeService;
@@ -56,20 +63,16 @@ export class TopicController {
     try {
       const { id } = req.params;
       if (!id) {
-        res.status(400).json({
-          success: false,
-          error: 'Topic ID is required'
-        });
-        return;
+        throw new ValidationError('Topic ID is required');
       }
-      const topic = await this.database.findById<Topic>('topics', id);
+
+      const topic = await withDatabaseErrorHandling(
+        () => this.database.findById<Topic>('topics', id),
+        'getTopicById'
+      );
 
       if (!topic) {
-        res.status(404).json({
-          success: false,
-          error: 'Topic not found'
-        });
-        return;
+        throw new NotFoundError('Topic', id);
       }
 
       res.json({
@@ -77,11 +80,10 @@ export class TopicController {
         data: topic
       });
     } catch (error) {
-      console.error('Error fetching topic:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-      });
+      const errorResponse = formatErrorResponse(error as Error);
+      const statusCode = error instanceof ValidationError ? 400 :
+                        error instanceof NotFoundError ? 404 : 500;
+      res.status(statusCode).json(errorResponse);
     }
   }
 
@@ -92,40 +94,36 @@ export class TopicController {
       // Validate input
       const validation = TopicModel.validate(topicData);
       if (!validation.isValid) {
-        res.status(400).json({
-          success: false,
-          error: 'Validation failed',
-          details: validation.errors
-        });
-        return;
+        throw new ValidationError('Validation failed', validation.errors);
       }
 
-      // If parentTopicId is provided, verify it exists
+      // Validate parent topic exists if provided
       if (topicData.parentTopicId) {
-        const parentTopic = await this.database.findById<Topic>('topics', topicData.parentTopicId);
+        const parentTopic = await withDatabaseErrorHandling(
+          () => this.database.findById<Topic>('topics', topicData.parentTopicId),
+          'validateParentTopic'
+        );
         if (!parentTopic) {
-          res.status(400).json({
-            success: false,
-            error: 'Parent topic not found'
-          });
-          return;
+          throw new NotFoundError('Parent topic', topicData.parentTopicId);
         }
       }
 
       // Create topic using strategy pattern - handles both provided and auto-generated IDs
       const newTopic = TopicModel.create(topicData);
-      const createdTopic = await this.database.create<Topic>('topics', newTopic);
+      const createdTopic = await withDatabaseErrorHandling(
+        () => this.database.create<Topic>('topics', newTopic),
+        'createTopic'
+      );
 
       res.status(201).json({
         success: true,
         data: createdTopic
       });
     } catch (error) {
-      console.error('Error creating topic:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-      });
+      const errorResponse = formatErrorResponse(error as Error);
+      const statusCode = error instanceof ValidationError ? 400 :
+                        error instanceof NotFoundError ? 404 : 500;
+      res.status(statusCode).json(errorResponse);
     }
   }
 

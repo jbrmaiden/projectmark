@@ -25,6 +25,26 @@ export interface User extends EntityData {
   createdAt: string;
 }
 
+// User-Topic relationship with permissions
+export interface UserTopicPermission extends EntityData {
+  id: string;
+  userId: string;
+  topicId: string; // Can be baseTopicId for all versions
+  permission: 'owner' | 'editor' | 'viewer';
+  createdAt: string;
+  grantedBy: string; // User ID who granted this permission
+}
+
+// User-Resource relationship
+export interface UserResourcePermission extends EntityData {
+  id: string;
+  userId: string;
+  resourceId: string;
+  permission: 'owner' | 'editor' | 'viewer';
+  createdAt: string;
+  grantedBy: string;
+}
+
 export interface Topic extends EntityData {
   id: string;
   baseTopicId: string; // Links all versions of the same topic
@@ -65,4 +85,21 @@ export interface TopicHistory {
   versions: TopicVersion[];
 }
 
-export type EntityType = 'users' | 'topics' | 'resources';
+export interface Resource extends EntityData {
+  id: string;
+  name: string;
+  url: string;
+  description: string;
+  type: 'video' | 'article' | 'pdf' | 'document' | 'link';
+  topicId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Permission levels
+export type Permission = 'owner' | 'editor' | 'viewer';
+
+// Global user roles
+export type UserRole = 'Admin' | 'Editor' | 'Viewer';
+
+export type EntityType = 'users' | 'topics' | 'resources' | 'userTopicPermissions' | 'userResourcePermissions';
