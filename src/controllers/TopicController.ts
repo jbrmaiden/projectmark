@@ -3,6 +3,7 @@ import { IDatabase } from '../database/interfaces/IDatabase';
 import { Topic, Resource, TopicHistory } from '../types';
 import { TopicModel } from '../models/Topic';
 import { TopicTreeService } from '../services/TopicTreeService';
+import { ShortestPathService } from '../services/ShortestPathService';
 import { 
   ValidationError, 
   NotFoundError, 
@@ -13,9 +14,11 @@ import {
 
 export class TopicController {
   private topicTreeService: TopicTreeService;
+  private shortestPathService: ShortestPathService;
 
   constructor(private database: IDatabase) {
     this.topicTreeService = new TopicTreeService(database);
+    this.shortestPathService = new ShortestPathService(database);
   }
 
   async getAllTopics(req: Request, res: Response): Promise<void> {
@@ -671,4 +674,46 @@ export class TopicController {
       });
     }
   }
+
+  /**
+   * Find shortest path between two topics
+   */
+  async findShortestPath(req: Request, res: Response): Promise<void> {
+    try {
+      const { startTopicId, endTopicId } = req.params;
+      const onlyLatest = req.query.onlyLatest !== 'false';
+      
+      if (!startTopicId || !endTopicId) {
+        res.status(400).json({
+          success: false,
+          error: 'Both startTopicId and endTopicId are required'
+        });
+        return;
+      }
+
+      const result = await this.shortestPathService.findShortestPath(
+        startTopicId, 
+        endTopicId, 
+        onlyLatest
+      );
+      
+      res.json({
+        success: true,
+        data: {
+          pathExists: result.pathExists,
+          distance: result.distance,
+          path: result.path,
+          searchStats: result.searchStats
+        }
+      });
+    } catch (error) {
+      console.error('Error finding shortest path:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+
+
 }
