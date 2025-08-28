@@ -1,9 +1,17 @@
 import { Request, Response } from 'express';
 import { IDatabase } from '../database/interfaces/IDatabase';
-import { Topic, Resource, TopicHistory } from '../types';
+import { Topic, Resource, TopicWithResources, TopicHistory } from '../types';
 import { TopicModel } from '../models/Topic';
-import { TopicTreeService } from '../services/TopicTreeService';
 import { ShortestPathService } from '../services/ShortestPathService';
+import { TopicTreeService } from '../services/TopicTreeService';
+import { validateAsync, formatZodError } from '../middleware/validation';
+import { 
+  CreateTopicSchema, 
+  UpdateTopicSchema, 
+  ShortestPathParamsSchema, 
+  ShortestPathQuerySchema,
+  UuidParamSchema 
+} from '../schemas/validation';
 import { 
   ValidationError, 
   NotFoundError, 
@@ -92,27 +100,27 @@ export class TopicController {
 
   async createTopic(req: Request, res: Response): Promise<void> {
     try {
-      const topicData = req.body;
-
-      // Validate input
-      const validation = TopicModel.validate(topicData);
-      if (!validation.isValid) {
-        throw new ValidationError('Validation failed', validation.errors);
-      }
+      // Validate input using Zod
+      const topicData = await validateAsync(CreateTopicSchema, req.body);
 
       // Validate parent topic exists if provided
       if (topicData.parentTopicId) {
-        const parentTopic = await withDatabaseErrorHandling(
-          () => this.database.findById<Topic>('topics', topicData.parentTopicId),
-          'validateParentTopic'
-        );
+        const parentTopic = await this.database.findById<Topic>('topics', topicData.parentTopicId);
         if (!parentTopic) {
           throw new NotFoundError('Parent topic', topicData.parentTopicId);
         }
       }
 
-      // Create topic using strategy pattern - handles both provided and auto-generated IDs
-      const newTopic = TopicModel.create(topicData);
+      // Create topic using existing TopicModel
+      const cleanTopicData = {
+        name: topicData.name,
+        content: topicData.content,
+        ...(topicData.description && { description: topicData.description }),
+        ...(topicData.parentTopicId && { parentTopicId: topicData.parentTopicId }),
+        ...(topicData.createdBy && { createdBy: topicData.createdBy })
+      };
+      const newTopic = TopicModel.create(cleanTopicData);
+      
       const createdTopic = await withDatabaseErrorHandling(
         () => this.database.create<Topic>('topics', newTopic),
         'createTopic'
@@ -124,8 +132,10 @@ export class TopicController {
       });
     } catch (error) {
       const errorResponse = formatErrorResponse(error as Error);
-      const statusCode = error instanceof ValidationError ? 400 :
-                        error instanceof NotFoundError ? 404 : 500;
+      const statusCode = error instanceof Error && error.name === 'ZodError' ? 400 :
+                        error instanceof ValidationError ? 400 :
+                        error instanceof NotFoundError ? 404 :
+                        error instanceof Error && error.name === 'NotFoundError' ? 404 : 500;
       res.status(statusCode).json(errorResponse);
     }
   }
@@ -153,16 +163,8 @@ export class TopicController {
         return;
       }
 
-      // Validate update data
-      const validation = TopicModel.validate({ ...existingTopic, ...updateData });
-      if (!validation.isValid) {
-        res.status(400).json({
-          success: false,
-          error: 'Validation failed',
-          details: validation.errors
-        });
-        return;
-      }
+      // Validate update data using Zod
+      const validatedData = await validateAsync(UpdateTopicSchema, updateData);
 
       // If updating parentTopicId, verify it exists and isn't creating a circular reference
       if (updateData.parentTopicId && updateData.parentTopicId !== existingTopic.parentTopicId) {
@@ -184,11 +186,17 @@ export class TopicController {
         }
       }
 
-      // Create new version instead of updating
-      const newVersion = TopicModel.createVersion(existingTopic, updateData, createdBy);
+      // Create new version using existing TopicModel
+      const cleanUpdateData = {
+        ...(validatedData.name && { name: validatedData.name }),
+        ...(validatedData.content && { content: validatedData.content }),
+        ...(validatedData.description !== undefined && { description: validatedData.description }),
+        ...(validatedData.parentTopicId !== undefined && { parentTopicId: validatedData.parentTopicId })
+      };
+      const newVersion = TopicModel.createVersion(existingTopic, cleanUpdateData, createdBy);
       
       // Mark old version as no longer latest
-      const oldVersion = TopicModel.markAsOldVersion(existingTopic);
+      const oldVersion = { ...existingTopic, isLatest: false };
       await this.database.updateById<Topic>('topics', existingTopic.id, oldVersion);
       
       // Create new version
@@ -680,16 +688,12 @@ export class TopicController {
    */
   async findShortestPath(req: Request, res: Response): Promise<void> {
     try {
-      const { startTopicId, endTopicId } = req.params;
-      const onlyLatest = req.query.onlyLatest !== 'false';
+      // Validate parameters using Zod
+      const params = await validateAsync(ShortestPathParamsSchema, req.params);
+      const query = await validateAsync(ShortestPathQuerySchema, req.query);
       
-      if (!startTopicId || !endTopicId) {
-        res.status(400).json({
-          success: false,
-          error: 'Both startTopicId and endTopicId are required'
-        });
-        return;
-      }
+      const { startTopicId, endTopicId } = params;
+      const { onlyLatest } = query;
 
       const result = await this.shortestPathService.findShortestPath(
         startTopicId, 
@@ -708,10 +712,19 @@ export class TopicController {
       });
     } catch (error) {
       console.error('Error finding shortest path:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-      });
+      
+      // Handle validation errors specifically
+      if (error instanceof Error && error.name === 'ZodError') {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed'
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
     }
   }
 
