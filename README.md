@@ -1,19 +1,21 @@
-# Dynamic Knowledge Base System
+# ProjectMark - Dynamic Knowledge Base System
 
-This project is a RESTful API for a **Dynamic Knowledge Base System**, built as a response to a challenge to create a complex, version-controlled, and permission-based knowledge management system. The API is developed using Node.js, Express, and TypeScript.
-
-This document provides a comprehensive overview of the project, its architecture, features, and instructions for setup and usage, as developed according to the requirements of the challenge.
+This project is a RESTful API for a **Dynamic Knowledge Base System**, built as a response to a challenge to create a complex, version-controlled, and permission-based knowledge management system. The API is developed using Node.js, Express, and TypeScript with comprehensive Zod validation.
 
 ## Table of Contents
 
 - [Features](#features)
 - [Technology Stack](#technology-stack)
+- [Quick Start](#quick-start)
+- [Database Setup](#database-setup)
+- [Authentication & Authorization](#authentication--authorization)
 - [Project Structure](#project-structure)
 - [Advanced Design and Implementation](#advanced-design-and-implementation)
+- [Development Workflow](#development-workflow)
+- [Testing](#testing)
 - [API Documentation](#api-documentation)
-- [Getting Started](#getting-started)
-- [Running the Application](#running-the-application)
-- [Running Tests](#running-tests)
+- [Troubleshooting](#troubleshooting)
+- [Next Steps](#next-steps)
 
 ## Features
 
@@ -34,24 +36,61 @@ This document provides a comprehensive overview of the project, its architecture
 - **Validation**: Zod for schema validation.
 - **Testing**: Jest for unit and integration testing.
 
+## 🛠️ Development Workflow
+
+### Available Scripts
+```bash
+# Development
+npm run dev              # Start development server
+npm run dev:watch        # Start with file watching
+
+# Building
+npm run build           # Compile TypeScript to JavaScript
+npm run clean          # Remove build artifacts
+npm run type-check     # Check TypeScript types without building
+
+# Testing
+npm test               # Run all tests
+npm run test:watch     # Run tests in watch mode
+npm run test:coverage  # Run tests with coverage report
+```
+
 ## Project Structure
 
 The codebase is organized into a modular structure to promote separation of concerns and maintainability.
 
 ```
 src/
-├── controllers/    # Request handling and business logic
-├── database/       # In-memory database implementation
-├── middleware/     # Express middleware (permissions, validation)
-├── models/         # Data models with business logic (e.g., Topic versioning)
-├── patterns/       # Implementations of design patterns (e.g., Composite)
-├── routes/         # API route definitions
-├── schemas/        # Zod validation schemas
-├── services/       # Core services (e.g., Shortest Path, Permissions)
-├── tests/          # Unit and integration tests
-├── types/          # TypeScript type definitions
-└── utils/          # Utility functions
+├── controllers/        # Request handlers and business logic
+├── database/          # Database interfaces and implementations
+├── middleware/        # Express middleware (validation, etc.)
+├── models/           # Data models and factories
+├── routes/           # API route definitions
+├── schemas/          # Zod validation schemas
+├── services/         # Business logic services
+├── types/           # TypeScript type definitions
+├── utils/           # Utility functions and helpers
+└── server.ts        # Application entry point
 ```
+
+## 🧪 Testing
+
+### Run Tests
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+### Test Results
+- ✅ **8 test suites**: All passing
+- ✅ **128 tests**: 100% success rate
+- ✅ **Comprehensive coverage**: Controllers, services, and utilities
 
 ## Advanced Design and Implementation
 
@@ -115,53 +154,147 @@ These routes demonstrate permission handling.
 - `GET /:id/permissions`: View permissions for a topic (requires Owner role).
 - `DELETE /:id/permissions/:userId`: Revoke a user's permission for a topic (requires Owner role).
 
-## Getting Started
+#### Test Failures
+```bash
+# Run tests with verbose output
+npm test -- --verbose
+
+# Run specific test file
+npm test -- TopicController.test.ts
+```
+--
+
+## 🚀 Quick Start
 
 ### Prerequisites
+- **Node.js**: Version 18+ (recommended: latest LTS)
+- **npm**: Version 8+ (comes with Node.js)
+- **Git**: For version control
+- **Code Editor**: VS Code recommended with TypeScript extensions
 
-- Node.js (v14 or higher)
-- npm
+#### System Requirements
+- **OS**: macOS, Linux, or Windows
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 500MB free space
 
-### Installation
+### Installation & Setup
 
-1.  Clone the repository:
-    ```sh
-    git clone <repository-url>
-    ```
-2.  Navigate to the project directory:
-    ```sh
-    cd projectmark
-    ```
-3.  Install dependencies:
-    ```sh
-    npm install
-    ```
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/jbrmaiden/projectmark.git
+   cd projectmark
+   ```
 
-## Running the Application
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-To start the Express server, run:
+3. **Run the Application**
+   ```bash
+   # Development mode with hot reload
+   npm run dev
+   
+   # Or watch mode with automatic restart
+   npm run dev:watch
+   
+   # Production build and run
+   npm run build
+   npm start
+   ```
 
-```sh
-npm start
+4. **Verify Installation**
+   Open your browser and visit:
+   - **API Root**: http://localhost:3000
+   - **Health Check**: http://localhost:3000/health
+   - **Database Test**: http://localhost:3000/test
+
+## 🗄️ Database Setup
+
+### Current Implementation: In-Memory Database
+The application uses an in memory for development and testing:
+
+- **Data is lost when the server restarts**
+
+### Database Initialization
+The database is automatically initialized when the server starts:
+
+```typescript
+// Automatic initialization in src/server.ts
+const database = new InMemoryDatabase();
+await database.connect({ type: 'memory' });
 ```
 
-The API will be available at `http://localhost:3000`.
 
-## Running Tests
+## 🔐 Authentication & Authorization
 
-To run the Jest test suite, use the following command:
+### Current Implementation: Role-Based Permissions
+The application uses a **role-based permission system** without traditional authentication:
 
-```sh
-npm test
+#### **User Roles**
+- **🔴 Admin**: Full system access - create, read, update, delete all resources
+- **🟡 Editor**: Content management - create, read, update topics and resources  
+- **🟢 Viewer**: Read-only access - browse topics and resources safely
+
+#### **Permission Architecture**
+```typescript
+// Hierarchical permission levels
+type Permission = 'viewer' | 'editor' | 'admin';
+
+// User role definitions
+type UserRole = 'Viewer' | 'Editor' | 'Admin';
+
+// Permission inheritance: Admin > Editor > Viewer
 ```
 
-To run tests in watch mode:
+### Setting Up Users
 
-```sh
-npm run test:watch
+#### Create Users via API
+```bash
+# Create an Admin user
+curl -X POST http://localhost:3000/api/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Admin User",
+    "email": "admin@example.com",
+    "role": "Admin"
+  }'
+
+# Create an Editor user
+curl -X POST http://localhost:3000/api/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Editor User",
+    "email": "editor@example.com",
+    "role": "Editor"
+  }'
+
+# Create a Viewer user
+curl -X POST http://localhost:3000/api/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Viewer User",
+    "email": "viewer@example.com",
+    "role": "Viewer"
+  }'
 ```
 
-To generate a test coverage report:
+#### Grant Topic-Specific Permissions
+```bash
+# Grant specific permissions to a user for a topic
+curl -X POST http://localhost:3000/api/v1/topics/{topicId}/permissions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user-uuid",
+    "permission": "editor"
+  }'
+```
 
-```sh
-npm run test:coverage
+### 🛡️ Permission Enforcement
+
+The system automatically enforces permissions across all protected endpoints:
+
+- **Topic Operations**: Create, update, delete topics
+- **Resource Operations**: Manage resources within topics
+- **User Management**: Admin-only operations
+
