@@ -72,15 +72,15 @@ describe('TopicController - Shortest Path Endpoints', () => {
       mockShortestPathService.findShortestPath.mockResolvedValue(mockResult);
 
       mockRequest.params = {
-        startTopicId: 'start-topic',
-        endTopicId: 'end-topic'
+        startTopicId: '123e4567-e89b-12d3-a456-426614174000',
+        endTopicId: '123e4567-e89b-12d3-a456-426614174001'
       };
 
       await topicController.findShortestPath(mockRequest as Request, mockResponse as Response);
 
       expect(mockShortestPathService.findShortestPath).toHaveBeenCalledWith(
-        'start-topic',
-        'end-topic',
+        '123e4567-e89b-12d3-a456-426614174000',
+        '123e4567-e89b-12d3-a456-426614174001',
         true // onlyLatest default
       );
 
@@ -111,23 +111,23 @@ describe('TopicController - Shortest Path Endpoints', () => {
       mockShortestPathService.findShortestPath.mockResolvedValue(mockResult);
 
       mockRequest.params = {
-        startTopicId: 'start-topic',
-        endTopicId: 'end-topic'
+        startTopicId: '123e4567-e89b-12d3-a456-426614174002',
+        endTopicId: '123e4567-e89b-12d3-a456-426614174003'
       };
       mockRequest.query = { onlyLatest: 'false' };
 
       await topicController.findShortestPath(mockRequest as Request, mockResponse as Response);
 
       expect(mockShortestPathService.findShortestPath).toHaveBeenCalledWith(
-        'start-topic',
-        'end-topic',
+        '123e4567-e89b-12d3-a456-426614174002',
+        '123e4567-e89b-12d3-a456-426614174003',
         false
       );
     });
 
     it('should return 400 when startTopicId is missing', async () => {
       mockRequest.params = {
-        endTopicId: 'end-topic'
+        endTopicId: '123e4567-e89b-12d3-a456-426614174004'
       };
 
       await topicController.findShortestPath(mockRequest as Request, mockResponse as Response);
@@ -135,13 +135,13 @@ describe('TopicController - Shortest Path Endpoints', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(400);
       expect(mockResponse.json).toHaveBeenCalledWith({
         success: false,
-        error: 'Both startTopicId and endTopicId are required'
+        error: expect.stringContaining('Validation failed')
       });
     });
 
     it('should return 400 when endTopicId is missing', async () => {
       mockRequest.params = {
-        startTopicId: 'start-topic'
+        startTopicId: '123e4567-e89b-12d3-a456-426614174005'
       };
 
       await topicController.findShortestPath(mockRequest as Request, mockResponse as Response);
@@ -149,7 +149,19 @@ describe('TopicController - Shortest Path Endpoints', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(400);
       expect(mockResponse.json).toHaveBeenCalledWith({
         success: false,
-        error: 'Both startTopicId and endTopicId are required'
+        error: expect.stringContaining('Validation failed')
+      });
+    });
+
+    it('should return 400 when both parameters are missing', async () => {
+      mockRequest.params = {};
+
+      await topicController.findShortestPath(mockRequest as Request, mockResponse as Response);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        success: false,
+        error: expect.stringContaining('Validation failed')
       });
     });
 
@@ -157,8 +169,8 @@ describe('TopicController - Shortest Path Endpoints', () => {
       mockShortestPathService.findShortestPath.mockRejectedValue(new Error('Service error'));
 
       mockRequest.params = {
-        startTopicId: 'start-topic',
-        endTopicId: 'end-topic'
+        startTopicId: '123e4567-e89b-12d3-a456-426614174006',
+        endTopicId: '123e4567-e89b-12d3-a456-426614174007'
       };
 
       await topicController.findShortestPath(mockRequest as Request, mockResponse as Response);

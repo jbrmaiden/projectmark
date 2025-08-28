@@ -255,7 +255,7 @@ describe('TopicController', () => {
       const topicData = {
         name: 'Child Topic',
         content: 'Content',
-        parentTopicId: 'nonexistent-parent'
+        parentTopicId: '123e4567-e89b-12d3-a456-426614174000' // Valid UUID that doesn't exist
       };
 
       const req = createMockRequest({ body: topicData });
@@ -266,7 +266,7 @@ describe('TopicController', () => {
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        error: 'Parent topic with ID nonexistent-parent not found',
+        error: 'Parent topic with ID 123e4567-e89b-12d3-a456-426614174000 not found',
         type: 'not_found_error'
       });
     });
